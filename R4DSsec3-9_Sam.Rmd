@@ -1,0 +1,100 @@
+---
+title: "R4DSsec3-9"
+author: "Sam Xu"
+date: "April 9, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(maps)
+library(mapproj)
+```
+
+## Summary
+  For ggplot, coordinates can be adjusted in purose. Below are some situations where you might want to make changes.
+  
+### To switches the x and y axes, use coord_flip():
+```{r}
+ggplot(data = mpg, mapping = aes(x = class, y = hwy)) + 
+  geom_boxplot()
+ggplot(data = mpg, mapping = aes(x = class, y = hwy)) + 
+  geom_boxplot() +
+  coord_flip()
+```
+  
+### While plotting spatial data, use coord_quickmap() to sets the aspect ratio correctly for maps:
+```{r}
+nz <- map_data("nz")
+ggplot(nz, aes(long, lat, group = group)) +
+  geom_polygon(fill = "white", colour = "black")
+ggplot(nz, aes(long, lat, group = group)) +
+  geom_polygon(fill = "white", colour = "black") +
+  coord_quickmap()
+```
+  
+### To use polar coordinates, coord_polar():
+```{r}
+bar <- ggplot(data = diamonds) + 
+  geom_bar(
+    mapping = aes(x = cut, fill = cut), 
+    show.legend = FALSE,
+    width = 1
+  ) + 
+  theme(aspect.ratio = 1) +
+  labs(x = NULL, y = NULL)
+
+bar + coord_flip()
+bar + coord_polar()
+```
+  
+
+## Exercise solution
+### 1.
+```{r}
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = 1, fill = clarity), position = "fill") +
+  coord_polar(theta = "y")
+```
+  
+### 2.
+  Labs function can modify axis, legend, and plot labels. For example:  
+```{r}
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = 1, fill = clarity), position = "fill")
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = 1, fill = clarity), position = "fill") +
+  labs(title = "Stack plot", subtitle = "Count")
+```
+  
+### 3.
+  They do similar jobs. Map projections in 'coord_map' require package 'mapproj' and they do not, in general, preserve straight lines, so this requires considerable computation. 'coord_quickmap' is a quick approximation that does preserve straight lines. It works best for smaller areas closer to the equator.  
+
+### 4.
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_point() + 
+  geom_abline() +
+  coord_fixed()
+```
+  
+  The plot shows that hwy and cty are highly correlated and the relationship is linear.  
+  'coord_fixed' forces a specified ratio between the physical representation of data units on the axes. Here by default the ratio is 1. It ensures that one unit on the x-axis is the same length as one unit on the y-axis. In some sense it avoided a misleading message that correlation between hwy and cty was small.  
+  'geom_abline' added a diagonal reference line to the plot.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
