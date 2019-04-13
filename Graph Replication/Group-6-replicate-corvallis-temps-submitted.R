@@ -17,6 +17,7 @@ copy_of <- ggplot(corv_temps, aes(yday, mean)) +
 copy_of
 group_6_replicate_corv_temps <- copy_of
 ggsave("group_6_replicate_corv_temps.pdf", height=3, width = 8)
+ggsave("group_6_replicate_corv_temps.jpg")
 
 # now to alter the graph...
 sblue = rgb(8/256,30/256,66/256)
@@ -36,3 +37,4 @@ alt_graph <- ggplot(corv_temps, aes(yday, mean)) +
 alt_graph
 group_6_alternative_2_corv_temps <- alt_graph
 ggsave("group_6_alternative_graph_corv_temps.pdf", height=3, width = 8)
+ggsave("group_6_alternative_graph_corv_temps.jpg")
