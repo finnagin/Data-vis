@@ -5,7 +5,7 @@ library("tidyverse")
 rm(list = ls())
 
 # reading in via url didn't work with this one
-corv_temps <- read_csv("Data-vis/Graph Replication/corv_sum.csv")
+corv_temps <- read_csv("corv_sum.csv")
 
 copy_of <- ggplot(corv_temps, aes(yday, mean)) +
   geom_linerange(aes(ymin = min, ymax = max)) + # alternative to geom_pointrange
