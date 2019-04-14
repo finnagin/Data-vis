@@ -2,7 +2,7 @@
 title: "More ggplot2: Facets, Geoms, Stats, Positioning and Coords"
 author: "Group 6"
 date: "April 10, 2019"
-output: html_document
+output: pdf_document
 ---
 
 ```{r, include = FALSE}
@@ -222,7 +222,7 @@ grid.arrange(e, f, g, h, i, j, nrow = 3)
 \pagebreak
 
 ## section 3.7 Statistical transformations (Chenyang)
-###Summary：Many graphs, like scatterplots, plot the raw values of your dataset. Other graphs, like bar charts, calculate new values to plot:
+###Summary: Many graphs, like scatterplots, plot the raw values of your dataset. Other graphs, like bar charts, calculate new values to plot:
 (1) bar charts, histograms, and frequency polygons bin your data and then plot bin counts, the number of points that fall in each bin.
 (2) smoothers fit a model to your data and then plot predictions from the model.
 (3) boxplots compute a robust summary of the distribution and then display a specially formatted box.
@@ -342,6 +342,7 @@ ggplot(data = diamonds) +
 
 
 
+
 ## Section 3.8: Position adjustments
 
 ### Summary
@@ -427,6 +428,11 @@ ggplot(data = mpg, mapping = aes(x = class, y = hwy)) +
 ```
 
 \pagebreak
+
+
+
+
+
 
 ## section 3.9 coordinate systems
 For ggplot, coordinates can be adjusted in purose. Below are some situations where you might want to make changes.
