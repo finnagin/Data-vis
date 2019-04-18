@@ -1,0 +1,46 @@
+---
+title: "commute_plot"
+author: "group 6"
+date: "4/17/2019"
+output: pdf_document
+---
+
+```{r, include=FALSE}
+library(readr)
+library(tidyverse)
+comu <- read_rds("commute-state.rds")
+head(comu)
+table(comu$transport_type)
+states <- c("or", "ak", "ca", "wa", "id", "nv")
+comu$type=ifelse(comu$transport_type=="Bicycle", 'Bike', ifelse(comu$transport_type=='Car, truck, or van','Car, truck, or van', ifelse(comu$transport_type=='Walked', 'Walked', ifelse(comu$transport_type=='Worked at home','Worked at home', 'Others'))))
+
+comu_or <- filter(comu, state %in% states)
+```
+```{r, echo=FALSE}
+# one panel states and type on it: 
+ggplot(data=comu_or, aes(y=prop, x=type, fill=state)) +
+  geom_col(position = position_dodge(preserve = "total"))+
+  ggtitle("Proportion of people that commute using different transportation types by State")
+
+# does not looks very good (too many levels of states and commute means), and problems with scales!
+  
+#ggplot(data=comu_or, aes(y=prop, x=type, fill=state)) +
+ # geom_col(position = position_dodge(preserve = "total"))+
+  #geom_text(aes(label=state), position = "dodge", check_overlap = TRUE,  vjust=0)+
+  #ggtitle("me playing with adding names to each bar")
+
+
+
+#faceting by type using wrap (allows diff scales in each panel)
+
+ggplot(data = comu_or, aes(y= prop, x=state, fill = state)) + 
+  geom_col() +
+  facet_wrap(type~., scales = "free") +
+  ylab("Proportion") +
+  xlab("State") +
+  ggtitle("Proportion of people that commute using different transportation types by State")
+
+#ggsave("commute_assigment.png")
+
+```
+
