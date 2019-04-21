@@ -37,7 +37,7 @@ alt_graph
 
 ```{r}
 sblue = rgb(8/256,30/256,66/256)
-# She said non standard statistics so I made my own name diversity measure that is the inverse of the maximum proportion i.e. goes up the lower the proportion of the most used name
+# She said non-standard statistics so I made my own name diversity measure that is the inverse of the maximum proportion i.e. goes up the lower the proportion of the most used name is
 babynames %>%
   group_by(year) %>%
   summarize(name_diversity_index = 1/max(prop)) %>%
@@ -49,4 +49,37 @@ babynames %>%
         
 ```
 
+```
+#Also tried out inverse median and number of unique names
+babynames %>%
+  group_by(year) %>%
+  summarize(name_diversity_index = 1/median(prop)) %>%
+  ggplot(aes(year, name_diversity_index)) +
+  geom_line(color = sblue) +
+  labs(x = "Year", y = "Name Diversity Index") +
+  theme(axis.title.x = element_text(size = 13), 
+        axis.title.y = element_text(size = 13))
+
+babynames %>%
+  group_by(year) %>%
+  summarize(unique_names = length(unique(name))) %>%
+  ggplot(aes(year, unique_names)) +
+  geom_line(color = sblue) +
+  labs(x = "Year", y = "Unique Names") +
+  theme(axis.title.x = element_text(size = 13), 
+        axis.title.y = element_text(size = 13))
+
+```
+
+```{r}
+# Tried plotting the peak popularity of names for each year
+babynames %>%
+  group_by(name) %>%
+  summarise(peak_year=year[which.max(prop)]) %>%
+  ggplot(aes(peak_year)) + geom_bar(colour = rainbow(138)) +
+  labs(x = "Year", y = "n names w/ peak popularity") +
+  theme(axis.title.x = element_text(size = 13), 
+        axis.title.y = element_text(size = 13))
+  
+```
 
