@@ -1,0 +1,21 @@
+### An alternative one:
+Reasons:  
+  1.To put the comparison of usages of the bicycle from different states into locations on a common scale.  
+2.The title was 'People in Oregon commute by bicycle more than in other (nearby) states'. Thus I highlighted OR by color in order to focus on the main comparison.  
+```{r}
+# data:
+comu1 <- read_rds("commute-state.rds")
+states <- c("or", "ak", "ca", "wa", "id", "nv")
+comu1_or <- filter(comu1, state %in% states)
+
+# Plot:
+ggplot(data=comu1_or, aes(y = prop, x = transport_type, shape = state, color = (state=="or"))) +
+  geom_point() +
+  facet_wrap(~transport_type, scales = "free") +
+  ylab("Proportion") +
+  xlab("State") +
+  scale_color_manual(labels = c("Other States", "OR"), values = c("deepskyblue2", "Orange"), aesthetics = "color") + 
+  theme(legend.title = element_blank()) +
+  labs(title = "Proportion of people that commute using different transportation types", 
+       subtitle = "People in Oregon commute by bicycle more than in other (nearby) states")
+```
