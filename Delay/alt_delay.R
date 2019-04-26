@@ -34,8 +34,9 @@ day_hour_sum %>%
   group_by(DepHour, DayOfWeek) %>%
   summarise(avg_delay = avg_delay[which(Origin == "HOU")][1]-avg_delay[which(Origin == "IAH")][1],
             avg_delay_delayed = avg_delay_delayed[which(Origin == "HOU")][1]-avg_delay_delayed[which(Origin == "IAH")][1],
-            prop_over_15 = prop_over_15[which(Origin == "HOU")][1]-prop_over_15[which(Origin == "IAH")][1],
+            prop_over_15 = (prop_over_15[which(Origin == "HOU")][1]-prop_over_15[which(Origin == "IAH")][1])*100,
   ) %>%
   ggplot(aes(DepHour, DayOfWeek)) +
   geom_tile(aes(fill = prop_over_15)) +
-  scale_fill_gradient2(low="Red", mid="Yellow", high="Blue", midpoint=0, na.value="Black")
+  scale_fill_gradient2(name = "Percent Difference", low="Red", mid="Yellow", high="Blue", midpoint=0, na.value="Black") +
+  labs(x="Hour", y="Day", title="Difference in percentage of delays over 15 minutes of HOU to IAH")
