@@ -1,0 +1,22 @@
+---
+title: "UseofColor"
+author: "Sam Xu"
+date: "April 24, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Option 1:
+
+#### 1
+The variable the color is encoding is the difference of between 1991-2012 average temperature and 1901-1960 average temperature of each states of U.S. It is continuous.
+  
+#### 2
+With more positive difference of the temperature, the color tends to be more red, more satuated and more dark. With more negative difference of the temperature, the color tends to be more blue, more satuated and more dark.
+
+
+#### 3
+This is a diverging color scale with changing hue, chroma and luminance. This usage of color do follow the guildline. When the variable is temperature with both positive and negative values, zero is a baseline of comparison and there needs to have two directions in the color scale.
