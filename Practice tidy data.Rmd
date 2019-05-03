@@ -1,0 +1,55 @@
+---
+title: "Group assignment of Week5"
+author: "Chenyang Duan"
+date: "5/2/2019"
+output: html_document
+---
+##Plot2
+```{r}
+volcano_tbl <- as_tibble(volcano)
+colnames(volcano_tbl) <- 1:ncol(volcano) 
+volcano_tbl$row <- 1:nrow(volcano_tbl)
+
+volcano_tbl_new <- gather(volcano_tbl,variable,topology,-row,convert = TRUE)
+ggplot(volcano_tbl_new, aes(x=row, y=variable,z=topology,fill=topology))  + 
+  geom_tile() + 
+  coord_equal() +
+  geom_contour(color = "white", alpha = 0.5) + 
+  scale_fill_distiller(palette="Spectral", na.value="white") + 
+  theme_bw()
+```
+
+##Plot3
+```{r}
+budget <- tribble(
+  ~ Expenses,             ~ Jan, ~ Feb, ~ Mar, ~ Apr, ~ May, ~ Jun, ~ Jul, ~ Aug, ~ Sep, ~ Oct, ~ Nov, ~ Dec,
+  "Domestic Actual",      84853, 84838, 88103, 85072, 88723, 90384, 89374, 95273, 94239, 92394, 96934, 105034,
+  "Domestic Budget",      83000, 83830, 84668, 85515, 86370, 87234, 88106, 88987, 89877, 90776, 91684, 92600,
+  "International Actual", 12538, 12438, 14934, 14033, 13945, 15938, 14086, 15934, 13945, 17338, 19384, 22394,
+  "International Budget", 12000, 12600, 13860, 13200, 13860, 15246, 14520, 15246, 16771, 15972, 16771, 18448
+)
+budget_new<- gather(budget,variable,value,-Expenses)
+
+a<- subset(budget_new,Expenses=="Domestic Actual")$value
+b<-subset(budget_new,Expenses=="Domestic Budget")$value
+c<- subset(budget_new,Expenses=="International Actual")$value
+d<- subset(budget_new,Expenses=="International Budget")$value
+Domestic_difference <- a-b
+International_difference <- c-d
+Domestic_proportion <- (a-b)/a
+International_proportion <- (c-d)/c
+Month<- factor(subset(budget_new,Expenses=="Domestic Actual")$variable,levels=c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"))
+budget_diff <- data.frame(Domestic_difference,International_difference,Domestic_proportion,International_proportion,Month)
+budget_diff_new<- gather(budget_diff[c(1,2,5)],key="Type",value = "Difference",Domestic_difference,International_difference,-Month)
+budget_diff_new<- as_tibble(budget_diff_new)
+ggplot(budget_diff_new,aes(x=Month,y=Difference,group=Type,colour=Type))+
+  geom_line()+
+  geom_point()+ylab("")+xlab("")+labs(title = "Expense Variance from Budget in U.S. Dollars")
+
+budget_diff_new2<- gather(budget_diff[c(3,4,5)],key="Type",value = "Difference",Domestic_proportion,International_proportion,-Month)
+budget_diff_new2<- as_tibble(budget_diff_new2)
+ggplot(budget_diff_new2,aes(x=Month,y=Difference,group=Type,colour=Type))+
+  geom_line()+
+  geom_point()+ylab("")+xlab("")+labs(title = "Percentage Variance of Expenses from Budget")
+
+```
