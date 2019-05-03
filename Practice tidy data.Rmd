@@ -4,6 +4,60 @@ author: "Chenyang Duan"
 date: "5/2/2019"
 output: html_document
 ---
+##Plot1
+
+```{r}
+
+library(ggrepel)
+tax <- tribble(
+  ~ Country,     ~ `1970`, ~ `1979`,
+  "Sweden",          46.9,     57.4,
+  "Netherlands",     44.0,     55.8,
+  "Norway",          43.5,     52.2,
+  "Britain",         40.7,     39.0,
+  "France",          39.0,     43.4,
+  "Germany",         37.5,     42.9,
+  "Belgium",         35.2,     43.2,
+  "Canada",          34.9,     35.8,
+  "Finland",         34.9,     38.2,
+  "Italy",           30.4,     35.7,
+  "United States",   30.3,     32.5,
+  "Greece",          26.8,     30.6,
+  "Switzerland",     26.5,     33.2,
+  "Spain",           22.5,     27.1,
+  "Japan",           20.7,     26.6
+)
+
+tidytax <- tax %>% gather(key = "year", value = "GDP", `1970`, `1979`, convert = T)
+
+ggplot(tidytax)+
+  geom_line(aes(x = year, y = GDP, group = Country), size = .3)+
+  theme_void()+
+  xlab("")+
+  ylab("")+
+  scale_y_continuous(limits = c(20, 63))+
+  scale_x_continuous(limits = c(1963, 1980))+
+  geom_text_repel(data = filter(tidytax, year == 1970), 
+                  aes(x = year, y = GDP, label = Country),
+                  nudge_x = -1, hjust = 1, direction = "y", size = 2.5)+
+  geom_text_repel(data = filter(tidytax, year == 1970), 
+                  aes(x = year, y = GDP, label = GDP), 
+                  direction = "y", nudge_x=-.2,size = 2.5)+
+  geom_text_repel(data = filter(tidytax, year == 1979), 
+                  aes(x = year, y = GDP, label = Country), 
+                  direction = "y", size = 2.5, 
+                  nudge_x = 0.25, hjust = -0.5)+
+  geom_text_repel(data = filter(tidytax, year == 1979), 
+                  aes(x = year, y = GDP, label = GDP),
+                  direction = "y", size = 2.5)+
+  annotate("text", x = c(1970, 1979), y = 60, 
+           label = c("1970", "1979"))+
+  annotate("text", x = 1965, y = 58, label = 
+             paste("Current Receipts of Government as a\n", 
+            "Percentage of Gross Domestic\nProduct, 1970 and 1979"))
+
+```
+
 ##Plot2
 ```{r}
 volcano_tbl <- as_tibble(volcano)
