@@ -7,7 +7,7 @@ output: html_document
 ##Plot1
 
 ```{r}
-
+library(tidyverse)
 library(ggrepel)
 tax <- tribble(
   ~ Country,     ~ `1970`, ~ `1979`,
