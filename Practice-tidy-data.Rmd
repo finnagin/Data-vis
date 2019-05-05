@@ -112,7 +112,8 @@ ggplot(volcano_tbl_new, aes(x=row, y=variable,z=topology,fill=topology))  +
   coord_equal() +
   geom_contour(color = "white", alpha = 0.5) + 
   scale_fill_distiller(palette="Spectral", na.value="white") + 
-  theme_bw()
+  theme_bw() +
+  labs(title = "Maunga Whau Topology")
 ```
 
 ## Plot3
