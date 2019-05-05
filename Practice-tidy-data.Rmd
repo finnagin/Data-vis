@@ -1,14 +1,20 @@
 ---
 title: "Group assignment of Week5"
-author: "Chenyang Duan"
+author: "group 6: Finn Womack, Lorne Curran, Martin Leandro Uranga Priore, Chenyang Duo, Emerson Webb, Jiarui Xu"
 date: "5/2/2019"
-output: html_document
+output: pdf_document
 ---
-##Plot1
 
-```{r}
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 library(tidyverse)
 library(ggrepel)
+rm(list = ls())
+```
+
+## Plot1
+
+```{r}
 tax <- tribble(
   ~ Country,     ~ `1970`, ~ `1979`,
   "Sweden",          46.9,     57.4,
@@ -28,7 +34,8 @@ tax <- tribble(
   "Japan",           20.7,     26.6
 )
 
-tidytax <- tax %>% gather(key = "year", value = "GDP", `1970`, `1979`, convert = T)
+tidytax <- tax %>% 
+  gather(`1970`, `1979`, key = "year", value = "GDP", convert = T)
 
 ggplot(tidytax)+
   geom_line(aes(x = year, y = GDP, group = Country), size = .3)+
@@ -58,7 +65,8 @@ ggplot(tidytax)+
 
 ```
 
-##Plot2
+## Plot2
+
 ```{r}
 volcano_tbl <- as_tibble(volcano)
 colnames(volcano_tbl) <- 1:ncol(volcano) 
@@ -73,7 +81,8 @@ ggplot(volcano_tbl_new, aes(x=row, y=variable,z=topology,fill=topology))  +
   theme_bw()
 ```
 
-##Plot3
+## Plot3
+
 ```{r}
 budget <- tribble(
   ~ Expenses,             ~ Jan, ~ Feb, ~ Mar, ~ Apr, ~ May, ~ Jun, ~ Jul, ~ Aug, ~ Sep, ~ Oct, ~ Nov, ~ Dec,
