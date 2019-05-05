@@ -96,8 +96,10 @@ ggplot(tidytax)+
            label = c("1970", "1979"))+
   annotate("text", x = 1965, y = 58, 
     label = "Current Receipts of Government\n as Percentage of Gross Domestic\n Product, 1970 and 1979", 
-    size = 2)
+    size = 3)
 ```
+
+\pagebreak
 
 ## Plot2
 
