@@ -1,0 +1,27 @@
+---
+title: "Data manipulation with dplyr"
+author: "group 6: Finn Womack, Lorne Curran, Martin Leandro Uranga Priore, Chenyang Duo, Emerson Webb, Jiarui Xu"
+date: "5/10/2019"
+output: pdf_document
+---
+
+```{r, include=TRUE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, 
+                      fig.show = "hold")
+library(tidyverse)
+rm(list = ls())
+```
+
+### 5.7.1.2 Which plane (tailnum) has the worst on-time record?
+
+
+
+### 5.7.1.4 For each destination, compute the total minutes of delay. For each, flight, compute the proportion of the total delay for its destination.
+
+
+
+### 5.7.1.6 Look at each destination. Can you find flights that are suspiciously fast? (i.e. flights that represent a potential data entry error). Compute the air time a flight relative to the shortest flight to that destination. Which flights were most delayed in the air?
+
+
+
+### 13.4.6. 1 Compute the average delay by destination, then join on the airports data frame so you can show the spatial distribution of delays. (See R4DS for code to help here.)

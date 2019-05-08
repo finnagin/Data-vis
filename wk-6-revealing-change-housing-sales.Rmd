@@ -1,0 +1,29 @@
+---
+title: "Revealing change: housing sales"
+author: "group 6: Finn Womack, Lorne Curran, Martin Leandro Uranga Priore, Chenyang Duo, Emerson Webb, Jiarui Xu"
+date: "5/10/2019"
+output: pdf_document
+---
+  
+```{r, include=TRUE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, 
+                      fig.show = "hold")
+library(tidyverse)
+library(readxl)
+rm(list = ls())
+```
+
+
+```{r}
+# Get data  -------------------------------------------
+# Data comes from https://www.census.gov/construction/nrs/historical_data/index.html
+# Right clicking on "Houses Sold by Sales Price: U.S. Total (2002-present)" XLS
+# link, gives the following url and file name.
+file_name <- "usregsoldbyprice_cust.xls"
+url <- "https://www.census.gov/construction/nrs/xls/"
+
+# only download if it isn't already here
+if(!file.exists(file_name)){
+  download.file(paste0(url, file_name), file_name, mode = "wb")
+}
+```
