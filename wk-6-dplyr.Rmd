@@ -9,19 +9,79 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, 
                       fig.show = "hold")
 library(tidyverse)
+library(nycflights13)
 rm(list = ls())
 ```
 
 ### 5.7.1.2 Which plane (tailnum) has the worst on-time record?
 
+I'm a bit unsure what this means. If worst on time record means the flight with the record of the latest flight then we could find it this way: (flight N384HA)
 
+```{r}
+flights %>%
+  group_by(tailnum) %>%
+  filter(rank(desc(arr_delay)) == 1) %>%
+  arrange(desc(arr_delay)) %>%
+  select(tailnum, arr_delay)
+```
+
+
+If it instead means the percent of times the flight was on time we could find it like this: (I think this in unlickly since a bunch of flights have never not been on time.)
+
+```{r}
+flights %>%
+  group_by(tailnum) %>%
+  summarize(ot_rec = sum(arr_delay <=0)/n()) %>%
+  arrange((ot_rec)) %>%
+  select(tailnum, ot_rec)
+```
+
+If on-time record is refering to average number of minutes late then we could find it like this: (flight N844MH)
+
+```{r}
+flights %>%
+  group_by(tailnum) %>%
+  summarize(ot_rec = mean(arr_delay)) %>%
+  arrange(desc(ot_rec)) %>%
+  select(tailnum, ot_rec)
+
+```
 
 ### 5.7.1.4 For each destination, compute the total minutes of delay. For each, flight, compute the proportion of the total delay for its destination.
+
+I think this is what this question is asking for. This takes the sum of all delays for each destination (including negatives) then for each flight in the dataset finds the ratio of the arival delay (also including negatives so this can be a negative ratio) to the total delay.
+
+```{r}
+flights %>%
+  group_by(dest) %>%
+  mutate(total_dest = sum(arr_delay, na.rm = TRUE)) %>%
+  mutate(delay_prop = arr_delay/total_dest)
+```
 
 
 
 ### 5.7.1.6 Look at each destination. Can you find flights that are suspiciously fast? (i.e. flights that represent a potential data entry error). Compute the air time a flight relative to the shortest flight to that destination. Which flights were most delayed in the air?
 
+I tried finding outliers by using the 1st quantile - 1.5*IQR rule of thumb and got 90 flights:
+
+```{r}
+flights %>%
+  group_by(dest) %>%
+  mutate(out = quantile(air_time, 0.25, na.rm = TRUE) - 1.5*IQR(air_time, na.rm = TRUE)) %>%
+  filter(air_time < out)
+  
+```
+
+The second part can be done like so: (Should we be filtering outliers for this part?)
+
+```{r}
+flights %>%
+  group_by(dest) %>%
+  mutate(min_air = min(air_time, na.rm=TRUE)) %>%
+  mutate(air_delay = air_time - min_air) %>%
+  arrange(desc(air_delay)) %>%
+  select(year:day, air_time, air_delay)
+```
 
 
 ### 13.4.6. 1 Compute the average delay by destination, then join on the airports data frame so you can show the spatial distribution of delays. (See R4DS for code to help here.)
