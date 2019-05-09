@@ -69,10 +69,9 @@ flights %>%
   group_by(dest) %>%
   mutate(out = quantile(air_time, 0.25, na.rm = TRUE) - 1.5*IQR(air_time, na.rm = TRUE)) %>%
   filter(air_time < out)
-  
 ```
 
-The second part can be done like so: (Should we be filtering outliers for this part?)
+The ten most delayed in the air flights are the following: (Should we be filtering outliers for this second part?)
 
 ```{r}
 flights %>%
@@ -80,7 +79,21 @@ flights %>%
   mutate(min_air = min(air_time, na.rm=TRUE)) %>%
   mutate(air_delay = air_time - min_air) %>%
   arrange(desc(air_delay)) %>%
-  select(year:day, air_time, air_delay)
+  select(dest, year:day, flight, air_time, air_delay)
+```
+
+(if so then the code would be altered like so:)
+
+```{r}
+flights %>%
+  group_by(dest) %>%
+  mutate(out = quantile(air_time, 0.25, na.rm = TRUE) - 1.5*IQR(air_time, na.rm = TRUE)) %>%
+  filter(air_time >= out) %>%
+  group_by(dest) %>%
+  mutate(min_air = min(air_time, na.rm=TRUE)) %>%
+  mutate(air_delay = air_time - min_air) %>%
+  arrange(desc(air_delay)) %>%
+  select(dest, year:day, flight, air_time, air_delay)
 ```
 
 
