@@ -18,6 +18,8 @@ rm(list = ls())
 I'm a bit unsure what this means. If worst on time record means the flight with the record of the latest flight then we could find it this way: (flight N384HA)
 
 ```{r}
+library(nycflights13)
+library(tidyverse)
 flights %>%
   group_by(tailnum) %>%
   filter(rank(desc(arr_delay)) == 1) %>%
@@ -28,10 +30,11 @@ flights %>%
 
 If it instead means the percent of times the flight was on time we could find it like this: (I think this in unlickly since a bunch of flights have never not been on time.)
 
+
 ```{r}
 flights %>%
   group_by(tailnum) %>%
-  summarize(ot_rec = sum(arr_delay <=0)/n()) %>%
+  summarize(ot_rec = sum(arr_delay <=0)/n()) %>% #should not be arr_delay==0?
   arrange((ot_rec)) %>%
   select(tailnum, ot_rec)
 ```
@@ -44,7 +47,6 @@ flights %>%
   summarize(ot_rec = mean(arr_delay)) %>%
   arrange(desc(ot_rec)) %>%
   select(tailnum, ot_rec)
-
 ```
 
 ### 5.7.1.4 For each destination, compute the total minutes of delay. For each, flight, compute the proportion of the total delay for its destination.
@@ -58,7 +60,20 @@ flights %>%
   mutate(delay_prop = arr_delay/total_dest)
 ```
 
+I introduced a minor change by assuming that the delay cannot be negative.
 
+```{r}
+flights %>%
+  filter(arr_delay > 0) %>%
+  group_by(dest) %>%
+  mutate(
+    total_dest = sum(arr_delay),
+    delay_prop = arr_delay / total_dest
+  ) %>%
+  select(dest, month, day, dep_time, carrier, flight,
+         arr_delay, delay_prop) %>%
+  arrange(dest, desc(delay_prop))
+```
 
 ### 5.7.1.6 Look at each destination. Can you find flights that are suspiciously fast? (i.e. flights that represent a potential data entry error). Compute the air time a flight relative to the shortest flight to that destination. Which flights were most delayed in the air?
 
@@ -70,6 +85,8 @@ flights %>%
   mutate(out = quantile(air_time, 0.25, na.rm = TRUE) - 1.5*IQR(air_time, na.rm = TRUE)) %>%
   filter(air_time < out)
 ```
+
+
 
 The ten most delayed in the air flights are the following: (Should we be filtering outliers for this second part?)
 
@@ -96,5 +113,45 @@ flights %>%
   select(dest, year:day, flight, air_time, air_delay)
 ```
 
+I like Finn approach but I think we must consider grouping by destination and the origin to define what is most delayed. Also using a standarization with the median (more resistant to outliers than the mean) and selecting the most negative standard normal values can be useful:
+
+```{r}
+stand_fli <- flights %>%
+  filter(!is.na(air_time)) %>%
+  group_by(dest, origin) %>%
+  mutate(
+    median_airtime = median(air_time),
+    iqr_airtime = IQR(air_time),
+    n = n(),
+    standard_airtime = (air_time - median_airtime) / iqr_airtime)
+```
+
+```{r}
+
+stand_fli %>%
+  arrange(standard_airtime) %>%
+  select(
+    carrier, flight, origin, dest, month, day, air_time,
+    median_airtime, standard_airtime) %>%
+  print(width = 120)
+```
 
 ### 13.4.6. 1 Compute the average delay by destination, then join on the airports data frame so you can show the spatial distribution of delays. (See R4DS for code to help here.)
+
+
+
+```{r}
+av_delay=flights %>%
+  filter(arr_delay > 0 | dep_delay > 0) %>%
+  group_by(dest) %>%
+  summarise(ave_delay = ((mean(arr_delay, na.rm = TRUE)+mean(dep_delay, na.rm = TRUE))/2))
+
+
+airports %>%
+  right_join(av_delay, by = c('faa'='dest')) %>%
+  ggplot(aes(lon, lat, color=ave_delay)) +
+    borders("state") +
+    geom_point() +
+    coord_quickmap()
+
+```
