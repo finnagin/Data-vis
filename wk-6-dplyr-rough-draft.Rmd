@@ -5,65 +5,49 @@ date: "5/10/2019"
 output: pdf_document
 ---
 
-```{r, include=FALSE, message=FALSE}
-knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, 
-                      fig.show = "hold", out.width="50%")
+```{r, include=TRUE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, 
+                      fig.show = "hold")
 library(tidyverse)
 library(nycflights13)
-library(maps)
 rm(list = ls())
 ```
 
 ### 5.7.1.2 Which plane (tailnum) has the worst on-time record?
 
-There's no unequivocal definition of worst record here. If it's binary: either at the gate by the scheduled time or not, we can deliver a proportion of on-time:
+I'm a bit unsure what this means. If worst on time record means the flight with the record of the latest flight then we could find it this way: (flight N384HA)
+
 ```{r}
-on_time <- 
+library(nycflights13)
+library(tidyverse)
 flights %>%
-  filter(!(is.na(arr_delay)), !is.na(tailnum)) %>% 
   group_by(tailnum) %>%
-  summarize(ot_rec = sum(arr_delay <= 0)/n(),
-            n = n()) %>%
-  arrange(ot_rec) %>%
-  select(tailnum, ot_rec, n)
-
-head(on_time, n = 3)
+  filter(rank(desc(arr_delay)) == 1) %>%
+  arrange(desc(arr_delay)) %>%
+  select(tailnum, arr_delay)
 ```
 
-Those with no on-time flights have company, but a whole lot of tailnums have a piddly count of flights. We can look at the whole spread, then drill down to a meaningful breakpoint:
-```{r}
-ggplot(on_time, aes(n, ot_rec)) +
-  geom_point()
 
-on_time %>% 
-  filter(n == n[between(n, 20, 100)]) %>% 
-  ggplot(aes(n, ot_rec)) +
-    geom_point()
-```
+If it instead means the percent of times the flight was on time we could find it like this: (I think this in unlickly since a bunch of flights have never not been on time.)
 
-It looks like there's some losers among those with 20 or more flights in 2013. We'll choose the worst of those.
-```{r}
-on_time %>%
-  filter(n > 20) %>% 
-  head(n = 4)
-```
 
-Tailnum N988AT arrived on time for only 20% of its 35 flights.
-
-If on-time record is refering to average number of minutes late:
 ```{r}
 flights %>%
-  filter(!(is.na(arr_delay)), !(is.na(tailnum)),
-         arr_delay > 0) %>% 
   group_by(tailnum) %>%
-  summarize(ot_rec = mean(arr_delay),
-            n = n()) %>%
+  summarize(ot_rec = sum(arr_delay <=0)/n()) %>% #should not be arr_delay==0?
+  arrange((ot_rec)) %>%
+  select(tailnum, ot_rec)
+```
+
+If on-time record is refering to average number of minutes late then we could find it like this: (flight N844MH)
+
+```{r}
+flights %>%
+  group_by(tailnum) %>%
+  summarize(ot_rec = mean(arr_delay)) %>%
   arrange(desc(ot_rec)) %>%
-  select(tailnum, ot_rec, n) %>% 
-  head(n = 2)
+  select(tailnum, ot_rec)
 ```
-
-We have a "winner" here (N844MH), but then it only made 1 flight.
 
 ### 5.7.1.4 For each destination, compute the total minutes of delay. For each, flight, compute the proportion of the total delay for its destination.
 
