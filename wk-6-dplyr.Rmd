@@ -67,7 +67,7 @@ We have a "winner" here (N844MH), but then it only made 1 flight.
 
 ### 5.7.1.4 For each destination, compute the total minutes of delay. For each flight, compute the proportion of the total delay for its destination.
 
-This takes the sum of all delays for each destination (including negatives) then for each flight in the dataset finds the ratio of the arrival delay (also including negatives so this can be a negative ratio) to the total delay. Total delay per destination:
+This takes the sum of all delays for each destination (including negatives). Total delay per destination:
 ```{r}
 flights %>%
   filter(!(is.na(arr_delay))) %>% 
@@ -77,7 +77,7 @@ flights %>%
   arrange(dest)
 ```
 
-For each flight, its proportion of the total delay for its destination:
+For each flight, its proportion of the total delay for its destination (including negatives and so can be a negative ratio):
 ```{r}
 flights %>% 
   filter(!(is.na(arr_delay))) %>% 
@@ -85,8 +85,7 @@ flights %>%
     mutate(total_delay = sum(arr_delay),
            delay_prop = arr_delay/total_delay) %>% 
   select(month, day, flight, delay_prop, dest, total_delay) %>% 
-  arrange(month, day, flight) %>% 
-  head()
+  arrange(month, day, flight)
 ```
 
 Or we can introduce a minor change by assuming that the delay cannot be negative.
@@ -100,8 +99,7 @@ flights %>%
     delay_prop = arr_delay / total_delay
   ) %>%
   select(month, day, dep_time, flight, delay_prop, dest, total_delay) %>%
-  arrange(month, day, flight) %>% 
-  head()
+  arrange(month, day, flight)
 ```
 
 \pagebreak
@@ -109,68 +107,52 @@ flights %>%
 
 ### 5.7.1.6 Look at each destination. Can you find flights that are suspiciously fast? (i.e. flights that represent a potential data entry error). Compute the air time a flight relative to the shortest flight to that destination. Which flights were most delayed in the air?
 
-I tried finding outliers by using the 1st quantile - 1.5*IQR rule of thumb and got 90 flights:
-
+We calculate speed:
 ```{r}
 flights %>%
-  group_by(dest) %>%
-  mutate(out = quantile(air_time, 0.25, na.rm = TRUE) - 1.5*IQR(air_time, na.rm = TRUE)) %>%
-  filter(air_time < out)
+  filter(!(is.na(air_time))) %>% 
+  mutate(speed = distance/air_time,
+    out = quantile(speed, 0.75) + 1.5*IQR(speed)) %>%
+  select(year, month, day, flight, speed, distance, air_time, out) %>% 
+  arrange(desc(speed), distance, air_time, month, day, flight) %>% 
+ggplot(aes("", speed)) + geom_boxplot()
 ```
 
-
-
-The ten most delayed in the air flights are the following: (Should we be filtering outliers for this second part?)
-
+Lot's of slow ones, but a few on the fast side. We list them by using the 1st quartile + 1.5*IQR rule of thumb.
 ```{r}
 flights %>%
-  group_by(dest) %>%
-  mutate(min_air = min(air_time, na.rm=TRUE)) %>%
-  mutate(air_delay = air_time - min_air) %>%
-  arrange(desc(air_delay)) %>%
-  select(dest, year:day, flight, air_time, air_delay)
+  filter(!(is.na(air_time))) %>% 
+  mutate(speed = distance/air_time,
+    out = quantile(speed, 0.75) + 1.5*IQR(speed)) %>%
+  filter(speed > out) %>% 
+  select(year, month, day, flight, speed, distance, air_time, out) %>% 
+  arrange(desc(speed), distance, air_time, month, day, flight)
 ```
 
-(if so then the code would be altered like so:)
-
+The question asks us to compute the air time of a flight relative to the shortest flight to that destination. There's 3 possible origins we don't think we should conflate.
 ```{r}
 flights %>%
-  group_by(dest) %>%
-  mutate(out = quantile(air_time, 0.25, na.rm = TRUE) - 1.5*IQR(air_time, na.rm = TRUE)) %>%
-  filter(air_time >= out) %>%
-  group_by(dest) %>%
-  mutate(min_air = min(air_time, na.rm=TRUE)) %>%
-  mutate(air_delay = air_time - min_air) %>%
-  arrange(desc(air_delay)) %>%
-  select(dest, year:day, flight, air_time, air_delay)
-```
-
-I like Finn approach but I think we must consider grouping by destination and the origin to define what is most delayed. Also using a standarization with the median (more resistant to outliers than the mean) and selecting the most negative standard normal values can be useful:
-
-```{r}
-stand_fli <- flights %>%
-  filter(!is.na(air_time)) %>%
   group_by(dest, origin) %>%
-  mutate(
-    median_airtime = median(air_time),
-    iqr_airtime = IQR(air_time),
-    n = n(),
-    standard_airtime = (air_time - median_airtime) / iqr_airtime)
+  mutate(min_air = min(air_time, na.rm=TRUE), 
+         air_diff = air_time - min_air) %>%
+  arrange(dest, origin, month, day, flight, desc(air_diff)) %>%
+  select(dest, origin, month, day, flight, air_time, air_diff)
 ```
 
+The slowest per destination, per origin:
 ```{r}
-
-stand_fli %>%
-  arrange(standard_airtime) %>%
-  select(
-    carrier, flight, origin, dest, month, day, air_time,
-    median_airtime, standard_airtime) %>%
-  print(width = 120)
+flights %>%
+  filter(!(is.na(air_time))) %>% 
+  group_by(dest, origin) %>%
+  mutate(min_air = min(air_time, na.rm=TRUE), 
+         air_diff = air_time - min_air,
+         max_air = max(air_diff)) %>%
+  filter(air_diff == max_air) %>% 
+  arrange(dest, origin, month, day, flight, max_air) %>%
+  select(dest, origin, month, day, flight, air_time, max_air)
 ```
 
 ### 13.4.6. 1 Compute the average delay by destination, then join on the airports data frame so you can show the spatial distribution of delays. (See R4DS for code to help here.)
-
-
 
 ```{r}
 av_delay=flights %>%
@@ -178,12 +160,10 @@ av_delay=flights %>%
   group_by(dest) %>%
   summarise(ave_delay = ((mean(arr_delay, na.rm = TRUE)+mean(dep_delay, na.rm = TRUE))/2))
 
-
 airports %>%
   right_join(av_delay, by = c('faa'='dest')) %>%
   ggplot(aes(lon, lat, color=ave_delay)) +
     borders("state") +
     geom_point() +
     coord_quickmap()
-
 ```
