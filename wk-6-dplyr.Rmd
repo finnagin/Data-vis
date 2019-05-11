@@ -50,7 +50,7 @@ on_time %>%
 
 Tailnum N988AT arrived on time for only 20% of its 35 flights.
 
-If on-time record is refering to average number of minutes late:
+If on-time record is referring to average number of minutes late:
 ```{r}
 flights %>%
   filter(!(is.na(arr_delay)), !(is.na(tailnum)),
@@ -65,31 +65,47 @@ flights %>%
 
 We have a "winner" here (N844MH), but then it only made 1 flight.
 
-### 5.7.1.4 For each destination, compute the total minutes of delay. For each, flight, compute the proportion of the total delay for its destination.
+### 5.7.1.4 For each destination, compute the total minutes of delay. For each flight, compute the proportion of the total delay for its destination.
 
-I think this is what this question is asking for. This takes the sum of all delays for each destination (including negatives) then for each flight in the dataset finds the ratio of the arival delay (also including negatives so this can be a negative ratio) to the total delay.
-
+This takes the sum of all delays for each destination (including negatives) then for each flight in the dataset finds the ratio of the arrival delay (also including negatives so this can be a negative ratio) to the total delay. Total delay per destination:
 ```{r}
 flights %>%
+  filter(!(is.na(arr_delay))) %>% 
   group_by(dest) %>%
-  mutate(total_dest = sum(arr_delay, na.rm = TRUE)) %>%
-  mutate(delay_prop = arr_delay/total_dest)
+  summarise(total_delay = sum(arr_delay)) %>% 
+  select(dest, total_delay) %>% 
+  arrange(dest)
 ```
 
-I introduced a minor change by assuming that the delay cannot be negative.
+For each flight, its proportion of the total delay for its destination:
+```{r}
+flights %>% 
+  filter(!(is.na(arr_delay))) %>% 
+  group_by(dest) %>% 
+    mutate(total_delay = sum(arr_delay),
+           delay_prop = arr_delay/total_delay) %>% 
+  select(month, day, flight, delay_prop, dest, total_delay) %>% 
+  arrange(month, day, flight) %>% 
+  head()
+```
 
+Or we can introduce a minor change by assuming that the delay cannot be negative.
 ```{r}
 flights %>%
-  filter(arr_delay > 0) %>%
+  filter(!(is.na(arr_delay)), !(is.na(dest)),
+         arr_delay > 0) %>% 
   group_by(dest) %>%
   mutate(
-    total_dest = sum(arr_delay),
-    delay_prop = arr_delay / total_dest
+    total_delay = sum(arr_delay),
+    delay_prop = arr_delay / total_delay
   ) %>%
-  select(dest, month, day, dep_time, carrier, flight,
-         arr_delay, delay_prop) %>%
-  arrange(dest, desc(delay_prop))
+  select(month, day, dep_time, flight, delay_prop, dest, total_delay) %>%
+  arrange(month, day, flight) %>% 
+  head()
 ```
+
+\pagebreak
+
 
 ### 5.7.1.6 Look at each destination. Can you find flights that are suspiciously fast? (i.e. flights that represent a potential data entry error). Compute the air time a flight relative to the shortest flight to that destination. Which flights were most delayed in the air?
 
