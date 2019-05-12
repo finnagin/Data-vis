@@ -26,4 +26,79 @@ url <- "https://www.census.gov/construction/nrs/xls/"
 if(!file.exists(file_name)){
   download.file(paste0(url, file_name), file_name, mode = "wb")
 }
+# Read data:
+housesold <- read_excel(file_name,
+                        col_names = c("Period", "Total", "Below 125k", 
+                                      "125-150k","150-199k",
+                                      "200-$250k","250-299k",
+                                      "300-$400k","400-500k",
+                                      "500-$750k","750k+"),
+                        skip = 8)
+# Tidying data:
+# /Gathering subtotals and set order:
+housesold <- housesold %>% gather("Below 125k","125-150k","150-199k",
+                                      "200-$250k","250-299k",
+                                      "300-$400k","400-500k",
+                                      "500-$750k","750k+", key = "level", value = "Sub_Total")
+housesold$level <- factor(housesold$level, 
+  levels = c("Below 125k", "125-150k","150-199k","200-$250k",
+             "250-299k","300-$400k","400-500k","500-$750k","750k+"))
+# /Select 02-13 and Calculate percentages
+housesold <- housesold %>% 
+  filter(Period > 2001 & Period<2014) %>%
+  mutate(Pct = 100*Sub_Total/Total)
+# /Calculate difference with 2006-2008 average
+avr0208 <- housesold %>% 
+  filter(Period > 2005 & Period<2009) %>%
+  group_by(level) %>%
+  summarise(avr0208 = mean(Sub_Total, na.rm = TRUE))
+housesold <- housesold %>% right_join(avr0208, by = c('level'='level'))
+# /Calculate difference with 2002
+Sub_Total02<- housesold %>% 
+  filter(Period == 2002) %>%
+  select(level, Sub_Total02 = Sub_Total)
+housesold <- housesold %>% right_join(Sub_Total02, by = c('level'='level'))
+
+# Plots:
+# /8.15
+# //Top
+housesold %>%
+  ggplot() +
+  geom_line(mapping = aes(x = Period, y = Total))
+# //Mid
+housesold %>%
+  ggplot() +
+  geom_line(mapping = aes(x = Period, y = Sub_Total)) +
+  facet_wrap(~level, nrow = 1)
+# //Bottom
+housesold %>%
+  ggplot() +
+  geom_line(mapping = aes(x = Period, y = Pct)) +
+  facet_wrap(~level, nrow = 1)
+
+# /8.16
+# //Top
+housesold %>% mutate(diff = 100*(Sub_Total - avr0208)/avr0208) %>%
+  ggplot() +
+  geom_line(mapping = aes(x = Period, y = diff)) +
+  geom_hline(yintercept = 0) +
+  facet_wrap(~level, nrow = 1)
+# //Bottom
+housesold %>% mutate(diff = 100*(Sub_Total - Sub_Total02)/Sub_Total02) %>%
+  ggplot() +
+  geom_line(mapping = aes(x = Period, y = diff)) +
+  geom_hline(yintercept = 0) +
+  facet_wrap(~level, nrow = 1)
+
+# /8.17
+# //Left
+housesold %>% mutate(diff = 100*(Sub_Total - avr0208)/avr0208) %>%
+  ggplot() +
+  geom_line(mapping = aes(x = Period, y = diff, color = level)) +
+  geom_hline(yintercept = 0)
+# //Right
+housesold %>% mutate(diff = 100*(Sub_Total - Sub_Total02)/Sub_Total02) %>%
+  ggplot() +
+  geom_line(mapping = aes(x = Period, y = diff, color = level)) +
+  geom_hline(yintercept = 0)
 ```
