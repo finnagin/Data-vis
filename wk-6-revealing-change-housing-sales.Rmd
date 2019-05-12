@@ -10,6 +10,8 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE,
                       fig.show = "hold")
 library(tidyverse)
 library(readxl)
+library(gridExtra)
+library(scales)
 rm(list = ls())
 ```
 
@@ -21,7 +23,6 @@ rm(list = ls())
 # link, gives the following url and file name.
 file_name <- "usregsoldbyprice_cust.xls"
 url <- "https://www.census.gov/construction/nrs/xls/"
-
 # only download if it isn't already here
 if(!file.exists(file_name)){
   download.file(paste0(url, file_name), file_name, mode = "wb")
@@ -59,46 +60,165 @@ Sub_Total02<- housesold %>%
   select(level, Sub_Total02 = Sub_Total)
 housesold <- housesold %>% right_join(Sub_Total02, by = c('level'='level'))
 
+
+```
+
+
+```{r, out.width = "1000px"}
+
 # Plots:
 # /8.15
 # //Top
-housesold %>%
+labelpts_df <- data.frame(x = c(2002,2005,2013), 
+           y = c(973, 1283, 429), 
+           labs = c("973", "1283", "429"))
+fif_top <- housesold %>%
   ggplot() +
-  geom_line(mapping = aes(x = Period, y = Total))
+  geom_line(mapping = aes(x = Period, y = Total))+
+  labs(title = "Single-Family Housees sold", 
+       subtitle = "Thousands of units sold")+
+  theme_classic()+
+  theme(axis.line = element_blank(),
+        axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+        plot.title = element_text(size = 8),
+        plot.subtitle = element_text(size = 7))+
+  scale_x_continuous(breaks = c(2002,2004,2006,2008,2010,2012,2013))+
+  scale_y_continuous(breaks = c(0, 500, 1000, 1300))+
+  geom_point(data = labelpts_df, aes(x = x, y = y))+
+  geom_text(data = labelpts_df, 
+            aes(x = x, y = y, label = labs), 
+            nudge_y = 85, size = 2)
+  
+  
+  
 # //Mid
-housesold %>%
+fif_mid <- housesold %>%
   ggplot() +
-  geom_line(mapping = aes(x = Period, y = Sub_Total)) +
-  facet_wrap(~level, nrow = 1)
+  geom_line(mapping = aes(x = Period, y = Sub_Total))+
+  scale_x_continuous(breaks = c(2002, 2013))+
+  theme_classic()+
+  theme(axis.line = element_blank(),
+        axis.title.x = element_blank(),
+          axis.title.y = element_blank(), 
+        axis.text.x = element_text(angle = 90, hjust = 1))+
+  facet_wrap(~level, nrow = 1)+
+  labs(title = "By price range",
+       subtitle = "Thousands of Units sold")+
+  theme(strip.background = element_blank(),
+        strip.text = element_text(size = 8),
+        plot.title = element_text(size = 8),
+        plot.subtitle = element_text(size = 7))
+  
+
 # //Bottom
-housesold %>%
+fif_bot <- housesold %>%
   ggplot() +
-  geom_line(mapping = aes(x = Period, y = Pct)) +
-  facet_wrap(~level, nrow = 1)
+  geom_line(mapping = aes(x = Period, y = Pct))+
+  scale_x_continuous(breaks = c(2002, 2013))+
+  scale_y_continuous(breaks = c(0,10,20,30))+
+  theme_classic()+
+  theme(axis.line = element_blank(),
+        axis.title.x = element_blank(),
+          axis.title.y = element_blank(), 
+        axis.text.x = element_text(angle = 90, hjust = 1))+
+  facet_wrap(~level, nrow = 1)+
+  labs(subtitle = "As a percentage of all single-family houses sold")+
+  theme(strip.background = element_blank(),
+        strip.text = element_text(size = 7),
+        plot.subtitle = element_text(size = 8))
+grid.arrange(fif_top,fif_mid,fif_bot, nrow = 3)
+
+```
+
+```{r}
 
 # /8.16
 # //Top
-housesold %>% mutate(diff = 100*(Sub_Total - avr0208)/avr0208) %>%
+six_top <- housesold %>% mutate(diff = 100*(Sub_Total - avr0208)/avr0208) %>%
   ggplot() +
   geom_line(mapping = aes(x = Period, y = diff)) +
-  geom_hline(yintercept = 0) +
-  facet_wrap(~level, nrow = 1)
+  geom_hline(yintercept = 0, linetype="dotted") +
+  geom_vline(xintercept = 2001, linetype="dotted")+
+  scale_x_continuous(breaks = c(2002, 2013))+
+  scale_y_continuous(breaks = c(-100, 0, 100, 150), 
+                     labels = c("-100%", "0%", "100%", "150%"),
+                     limits = c(-100,150))+
+  theme_classic()+
+  theme(axis.line = element_blank(),
+        axis.title.x = element_blank(),
+          axis.title.y = element_blank(), 
+        axis.text.x = element_text(angle = 90, hjust = 1))+
+  facet_wrap(~level, nrow = 1)+
+  labs(subtitle = "In comparison to the 2006-2008 average (0% point)")+
+  theme(strip.background = element_blank(),
+        strip.text = element_text(size = 7))
+
 # //Bottom
-housesold %>% mutate(diff = 100*(Sub_Total - Sub_Total02)/Sub_Total02) %>%
+six_bot <- housesold %>% mutate(diff = 100*(Sub_Total - Sub_Total02)/Sub_Total02) %>%
   ggplot() +
   geom_line(mapping = aes(x = Period, y = diff)) +
-  geom_hline(yintercept = 0) +
-  facet_wrap(~level, nrow = 1)
+  geom_hline(yintercept = 0, linetype="dotted") +
+  geom_vline(xintercept = 2001, linetype="dotted")+
+  scale_x_continuous(breaks = c(2002, 2013))+
+  scale_y_continuous(breaks = c(-100, 0, 100, 200, 300), 
+                     labels = c("-100%", "0%", "100%", "200%", "300%"),
+                     limits = c(-110, 310))+
+  theme_classic()+
+  theme(axis.line = element_blank(),
+        axis.title.x = element_blank(),
+          axis.title.y = element_blank(), 
+        axis.text.x = element_text(angle = 90, hjust = 1))+
+  facet_wrap(~level, nrow = 1)+
+  labs(subtitle = "In comparison to 2002 (0% point)")+
+  theme(strip.background = element_blank(),
+        strip.text = element_text(size = 7))
+
+grid.arrange(six_top, six_bot, nrow = 2)
+
+```
+
+
+```{r}
 
 # /8.17
 # //Left
-housesold %>% mutate(diff = 100*(Sub_Total - avr0208)/avr0208) %>%
+sev_left <- housesold %>% mutate(diff = 100*(Sub_Total - avr0208)/avr0208) %>%
   ggplot() +
   geom_line(mapping = aes(x = Period, y = diff, color = level)) +
-  geom_hline(yintercept = 0)
+  geom_hline(yintercept = 0, linetype = "dotted")+
+  labs(title = "In comparison to the 2006-2008 average (0% point)")+
+  scale_x_continuous(breaks = 2002:2013,
+                     labels = c("2002", rep("", 10), "2013"))+
+  scale_y_continuous(breaks = c(-100, 0, 100, 150),
+                     labels = c("-100%", "0%", "100%", "150%"),
+                     limits = c(-100, 300))+
+  theme_classic()+
+  theme(legend.position="none", 
+        axis.line = element_blank(),
+        axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+        plot.title = element_text(size = 8))
+
 # //Right
-housesold %>% mutate(diff = 100*(Sub_Total - Sub_Total02)/Sub_Total02) %>%
+sev_right <- housesold %>% mutate(diff = 100*(Sub_Total - Sub_Total02)/Sub_Total02) %>%
   ggplot() +
   geom_line(mapping = aes(x = Period, y = diff, color = level)) +
-  geom_hline(yintercept = 0)
+  geom_hline(yintercept = 0, linetype = "dotted")+
+  labs(title = "In comparison to 2002 (0% point)")+
+  scale_x_continuous(breaks = 2002:2013,
+                     labels = c("2002", rep("", 10), "2013"))+
+  scale_y_continuous(breaks = c(-100, 0, 100, 200, 300),
+                     labels = c("-100%", "0%", "100%", "200%", "300%"),
+                     limits = c(-100, 300))+
+  theme_classic()+
+  theme(legend.position="none", 
+        axis.line = element_blank(),
+        axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+        plot.title = element_text(size = 8))
+
+grid.arrange(sev_left, sev_right, ncol = 2)
+
 ```
+
