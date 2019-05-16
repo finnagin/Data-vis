@@ -1,0 +1,26 @@
+---
+title: "EDA"
+author: "Group 6"
+date: "5/16/2019"
+output: pdf_document
+---
+
+To see how to categorical variables are related we can count the number of observations for each level combination of both variables. We can do this using $geom_count$ like in the following example:
+
+```{r, include=FALSE}
+library(tidyverse)
+```
+
+```{r, warning=FALSE}
+ggplot(data = diamonds) +
+  geom_count(mapping = aes(x = cut, y = color))
+```
+This graph has the disadvantage that we have to interpret the size of the dots which unless the difference between to neighbors is huge it can be difficult to assess the magnitude. One option, it to use $coun$ of ddply and then use the function $geom_tile$ which make the visualization easier to interpret since use colors to display the covariation between both variables.
+
+```{r}
+diamonds %>% 
+  count(color, cut) %>%  
+  ggplot(mapping = aes(x = color, y = cut)) +
+    geom_tile(mapping = aes(fill = n))
+```
+
