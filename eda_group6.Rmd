@@ -1,15 +1,59 @@
 ---
 title: "EDA"
-author: "Group 6"
+author: "group 6: Finn Womack, Lorne Curran, Martin Leandro Uranga Priore, Chenyang Duo, Emerson Webb, Jiarui Xu"
 date: "5/16/2019"
 output: pdf_document
 ---
 
 ```{r, include=FALSE}
+
+knitr::opts_chunk$set(out.width = "70%", fig.align = "center", message = FALSE)
+
 library(tidyverse)
 library(hexbin)
+library(RColorBrewer)
 ```
 
+## Visualizing distributions with `geom_freqpoly()` (7.3.1) - Lorne
+
+Histograms display the distribution of a continuous variable, preferably with a user-selected bin width:
+```{r}
+smaller <- diamonds %>% 
+  filter(carat < 3)
+
+smaller %>% ggplot(mapping = aes(x = carat)) +
+  geom_histogram(binwidth = 0.01)
+```
+
+\pagebreak
+
+To look at `carat`'s distribution within groups of a categorical co-variable, we might use `facet_wrap`:
+
+```{r}
+smaller %>% ggplot(mapping = aes(x = carat)) +
+  geom_histogram(binwidth =  0.01) +
+  facet_wrap(~ color)
+```
+
+Or we can employ `geom_freq_poly` to display the distribution of `carat` for each level of `color` as lines on the same plot:
+```{r}
+smaller %>% ggplot(mapping = aes(x = carat, color = color)) +
+  geom_freqpoly(binwidth = 0.2) + # upping binwidth
+  scale_color_brewer(palette = "Dark2") +
+  theme_minimal()
+```
+
+There's 2 problems with this. The number of levels displayed is at the limit of what we may want to present in a single graph. And, despite the increase in bin width, it's hard to distinguish the distribution of a given group when its values are much smaller than others. To avoid the first, we could go back to the `carat` and `cut` comparison (below). To solve the 2nd, we'd go on to R4DS __7.5.1 A categorical and continuous variable__.
+```{r}
+smaller %>% ggplot(mapping = aes(x = carat, color = cut)) +
+  geom_freqpoly(binwidth = 0.2) +
+  scale_color_brewer(palette = "Dark2") +
+  theme_minimal()
+```
+
+##  A categorical and continuous variable (7.5.1) - anyone?
+
+\pagebreak
 
 ## Covariation between two categorical variables (7.5.2) - Martin
 
@@ -43,9 +87,6 @@ ggplot(data = diamonds) +
 However, this technique of ajusting `alpha` can sometimes be difficult to use. If the data is too large and transparency proved challenging then another possible way of exploring covariance between two continous vriables, which might be useful in this case, is to put them into bins and ajusting the color intead of transparency by using the `geom_bin2d()` and `geom_hex()` functions. 
 
 ```{r, out.width="50%", fig.show='hold'}
-smaller <- diamonds %>% 
-  filter(carat < 3)
-
 ggplot(data = diamonds) +
   geom_bin2d(mapping = aes(x = carat, y = price))
 
