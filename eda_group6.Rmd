@@ -51,7 +51,49 @@ smaller %>% ggplot(mapping = aes(x = carat, color = cut)) +
   theme_minimal()
 ```
 
-##  A categorical and continuous variable (7.5.1) - anyone?
+If we are interestedto see how a continuous variable varies by the levels of a categorical variable, we have a few options. The first option is to use a frequency polygon:
+
+```{r}
+ggplot(data = diamonds, mapping = aes(x = price)) + 
+  geom_freqpoly(mapping = aes(colour = cut), binwidth = 500)
+```
+
+One issue with this display is that group sizes vary between diamond cuts, so a plot based on counts is not very useful. Instead, inside of the mapping argument above, we can specify `y=..density..` which standardizes each distribution:
+
+```{r}
+ggplot(data = diamonds, mapping = aes(x = price, y = ..density..)) + 
+  geom_freqpoly(mapping = aes(colour = cut), binwidth = 500)
+```
+
+Even with this it might be difficult to compare the variability between groups. For example, it seems that fair diamonds have the highest average price even though they are the lowest quality cut. However, since the plot is so cluttered the comparisons are not easy to make. An alternative plot to explore the variation between groups is a boxplot. With a boxplot some of the geometric information about the distribution is lost, but boxplots are much more compact and allow for easy comparisons. With this boxplot, it easier to see that fair diamonds on average have a higher price than higher quality diamonds. s
+
+```{r}
+ggplot(data = diamonds, mapping = aes(x = cut, y = price)) +
+  geom_boxplot()
+```
+
+Finally we can make use of the `reorder` function to change the order of the categorical variable in a boxplot. As an example, we can look at the `class` variable and the `hwy` variable in the `mpg` dataset. Notice how there is no intrinsic ordering of the `class` variable. 
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = class, y = hwy)) +
+  geom_boxplot()
+```
+
+We could use the `reorder` function to order `class` by the median value of `hwy` which makes comparisons easier to make. 
+
+```{r}
+ggplot(data = mpg) +
+  geom_boxplot(mapping = aes(x = reorder(class, hwy, FUN = median), y = hwy))
+```
+
+Finally if there are long variable names, then using `coord_flip` can make the plot easier to read.
+
+```{r}
+ggplot(data = mpg) +
+  geom_boxplot(mapping = aes(x = reorder(class, hwy, FUN = median), y = hwy)) +
+  coord_flip()
+```
+
 
 \pagebreak
 
