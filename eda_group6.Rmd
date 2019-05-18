@@ -51,7 +51,7 @@ smaller %>% ggplot(mapping = aes(x = carat, color = cut)) +
   theme_minimal()
 ```
 
-If we are interestedto see how a continuous variable varies by the levels of a categorical variable, we have a few options. The first option is to use a frequency polygon:
+If we are interested to see how a continuous variable varies by the levels of a categorical variable, we have a few options. The first option is to use a frequency polygon:
 
 ```{r}
 ggplot(data = diamonds, mapping = aes(x = price)) + 
