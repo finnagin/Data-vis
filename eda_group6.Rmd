@@ -43,13 +43,16 @@ smaller %>% ggplot(mapping = aes(x = carat, color = color)) +
   theme_minimal()
 ```
 
-There's 2 problems with this. The number of levels displayed is at the limit of what we may want to present in a single graph. And, despite the increase in bin width, it's hard to distinguish the distribution of a given group when its values are much smaller than others. To avoid the first, we could go back to the `carat` and `cut` comparison (below). To solve the 2nd, we'd go on to R4DS __7.5.1 A categorical and continuous variable__.
+There's 2 problems with this. The number of levels displayed is at the limit of what we may want to present in a single graph. And, despite the increase in bin width, it's hard to distinguish the distribution of a given group when its values are much smaller than others. To avoid the first, we could go back to the `carat` and `cut` example (below). To solve the 2nd, we'd go on to R4DS __7.5.1 A categorical and continuous variable__.
 ```{r}
 smaller %>% ggplot(mapping = aes(x = carat, color = cut)) +
   geom_freqpoly(binwidth = 0.2) +
   scale_color_brewer(palette = "Dark2") +
   theme_minimal()
 ```
+
+## 7.5.1 A categorical and continuous variable - Emerson
+
 
 If we are interested to see how a continuous variable varies by the levels of a categorical variable, we have a few options. The first option is to use a frequency polygon:
 
