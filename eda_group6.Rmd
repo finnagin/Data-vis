@@ -163,3 +163,36 @@ ggplot(data = smaller, mapping = aes(x = carat, y = price)) +
 \pagebreak
 
 ## To deal with unusual values (7.3.3) (7.4) - Sam  
+Usually when we visualizing the distribution of a variable using histogram, we may see an unpleasant sacle of the axis of variable like:  
+```{r, fig.width=8,fig.height=3}
+ggplot(diamonds) + 
+  geom_histogram(mapping = aes(x = y), binwidth = 0.5)
+```  
+In this plot we can see the scale of x varies from 0 to 60 with most of the area blank, which is unpleasant. One guess is there might be unusual values like outliers in the data. To check them out we can reduce limits of y-axis to look into small parts of the plot:  
+```{r, fig.width=8,fig.height=3}
+ggplot(diamonds) + 
+  geom_histogram(mapping = aes(x = y), binwidth = 0.5) +
+  coord_cartesian(ylim = c(0, 50))
+```  
+Here we can see a value of 0, a value around 32 and a value around 58 might be 2 unusual values in the dataset. The next thing we want to do is to remove them. Intuitively we can do this by pick out the part of data where y is between 3 to 20, using between():  
+```{r, fig.width=8,fig.height=3}
+diamonds2 <- diamonds %>% 
+  filter(between(y, 3, 20))
+ggplot(diamonds2) + 
+  geom_histogram(mapping = aes(x = y), binwidth = 0.5) +
+  coord_cartesian(ylim = c(0, 50))
+```  
+Now we see unusual values are no longer there. But this might cause problem if there do have some important data outside of this range. So instead we can generate another variable where we set unusal values to 'NA' using ifelse(). When using a new variable with 'NA's' generates annoying message that "Removed xx rows..". To remove this message a simple just use the statement 'na.rm = TRUE':  
+```{r, fig.width=8,fig.height=3}
+diamonds2 <- diamonds %>% 
+  mutate(y = ifelse(y < 3 | y > 20, NA, y))
+ggplot(diamonds2) + 
+  geom_histogram(mapping = aes(x = y), binwidth = 0.5, na.rm = TRUE)
+```  
+
+
+
+
+
+
+
