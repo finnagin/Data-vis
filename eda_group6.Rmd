@@ -1,14 +1,12 @@
 ---
-title: "EDA"
-author: "group 6: Finn Womack, Lorne Curran, Martin Leandro Uranga Priore, Chenyang Duo, Emerson Webb, Jiarui Xu"
+title: "EDA-group6"
+author: "group 6: Finn Womack, Lorne Curran, Martin Leandro Uranga Priore, Chenyang Duan, Emerson Webb, Jiarui Xu"
 date: "5/16/2019"
 output: pdf_document
 ---
 
 ```{r, include=FALSE}
-
 knitr::opts_chunk$set(out.width = "70%", fig.align = "center", message = FALSE)
-
 library(tidyverse)
 library(hexbin)
 library(RColorBrewer)
@@ -20,7 +18,6 @@ Histograms display the distribution of a continuous variable, preferably with a 
 ```{r}
 smaller <- diamonds %>% 
   filter(carat < 3)
-
 smaller %>% ggplot(mapping = aes(x = carat)) +
   geom_histogram(binwidth = 0.01)
 ```
@@ -124,7 +121,6 @@ We've already used scatterplots to examine the coveriance between to continuous 
 ```{r, fig.width=8,fig.height=3}
 ggplot(data = diamonds) +
   geom_point(mapping = aes(x = carat, y = price))
-
 ggplot(data = diamonds) + 
   geom_point(mapping = aes(x = carat, y = price), alpha = 1 / 100)
 ```
@@ -134,7 +130,6 @@ However, this technique of ajusting `alpha` can sometimes be difficult to use. I
 ```{r, out.width="50%", fig.show='hold'}
 ggplot(data = diamonds) +
   geom_bin2d(mapping = aes(x = carat, y = price))
-
 ggplot(data = diamonds) +
   geom_hex(mapping = aes(x = carat, y = price))
 ```
@@ -192,7 +187,56 @@ diamonds2 <- diamonds %>%
 ggplot(diamonds2) + 
   geom_histogram(mapping = aes(x = y), binwidth = 0.5, na.rm = TRUE)
 ```  
-  
+
+\pagebreak
+
+## Patterns and models (7.6) -Chenyang
+
+Patterns in your data provide clues about relationships. If a systematic relationship exists between two variables it will appear as a pattern in the data.
+
+For example, if we draw a scatterplot of Old Faithful eruption lengths versus the wait time between eruptions. Obviouly, we can find two patterns in the following plot.
+```{r}
+ggplot(data = faithful) + 
+  geom_point(mapping = aes(x = eruptions, y = waiting))
+```
+
+First of all, there is positive correlation between the Old Faithful eruption lengths and the waiting time.
+
+```{r}
+ggplot(data = faithful) + 
+  geom_point(mapping = aes(x = eruptions, y = waiting))+
+  stat_smooth(mapping = aes(x = eruptions, y = waiting),method = "lm",se=FALSE)
+```
+
+Secondly, the scatterplot also displays the two clusters. 
+
+```{r}
+ggplot(data = faithful, aes(x=eruptions,y=waiting)) + 
+  geom_point() +geom_density_2d()
+ 
+```
+
+Patterns provide one of the most useful tools for data scientists because they reveal covariation. 
+
+Models are a tool for extracting patterns out of data. For example, consider the diamonds data. It’s hard to understand the relationship between cut and price, because cut and carat, and carat and price are tightly related. It’s possible to use a model to remove the very strong relationship between price and carat so we can explore the subtleties that remain. 
+
+
+```{r}
+library(modelr)
+
+mod <- lm(log(price) ~ log(carat), data = diamonds)
+
+diamonds2 <- diamonds %>% 
+  add_residuals(mod) %>% 
+  mutate(resid = exp(resid))
+
+ggplot(data = diamonds, mapping = aes(x = cut, y = price)) +
+  geom_boxplot()+labs(title = "Before removing the relationship between carat and price")
+
+ggplot(data = diamonds2) + 
+  geom_boxplot(mapping = aes(x = cut, y = resid))+labs(title = "After removing the relationship between carat and price")
+```
+ And we can see that once we remove the relationship between carat and price. We can clearly see that better quality diamonds are more expensive.
 
 
 
